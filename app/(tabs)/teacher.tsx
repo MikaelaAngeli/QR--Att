@@ -21,6 +21,7 @@ import { COLORS } from '@/constants/colors';
 import { createEvent } from '@/lib/database';
 import { useAuth } from '@/lib/auth';
 import { getProfile } from '@/lib/profiles';
+import { useTheme } from '@/lib/theme';
 
 function toLocalISO(date: Date) {
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -48,6 +49,7 @@ type EditTarget = 'start' | 'end';
 
 export default function TeacherScreen() {
   const { user } = useAuth();
+  const { primary, tint } = useTheme();
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
   const [title, setTitle] = useState('');
@@ -173,7 +175,7 @@ export default function TeacherScreen() {
   if (!authorized) {
     return (
       <View style={[styles.container, styles.accessCheck]}>
-        <ActivityIndicator color={COLORS.primary} />
+        <ActivityIndicator color={primary} />
       </View>
     );
   }
@@ -225,16 +227,16 @@ export default function TeacherScreen() {
         {QUICK_END_OPTIONS.map((option) => (
           <Pressable
             key={option.label}
-            style={styles.chip}
+            style={[styles.chip, { backgroundColor: tint }]}
             onPress={() => handleQuickEnd(option.ms)}
           >
-            <Text style={styles.chipText}>{option.label}</Text>
+            <Text style={[styles.chipText, { color: primary }]}>{option.label}</Text>
           </Pressable>
         ))}
       </View>
       <Text style={styles.hint}>Tap a chip to set the end time from start.</Text>
 
-      {message && <Text style={styles.message}>{message}</Text>}
+      {message && <Text style={[styles.message, { color: primary }]}>{message}</Text>}
 
       <AppButton
         theme="primary"
@@ -260,7 +262,14 @@ export default function TeacherScreen() {
             Scan this QR code with the Scan tab:
           </Text>
           <View style={styles.qrBox}>
-            <QRCode value={payload} size={200} />
+            <QRCode
+              value={payload}
+              size={280}
+              quietZone={16}
+              color="#000000"
+              backgroundColor="#FFFFFF"
+              ecl="M"
+            />
           </View>
           <Text style={styles.payloadText}>{payload}</Text>
         </View>
@@ -276,12 +285,17 @@ type PickerFieldProps = {
 };
 
 function PickerField({ value, icon, onPress }: PickerFieldProps) {
+  const { primary, tint } = useTheme();
+
   return (
     <Pressable
-      style={({ pressed }) => [styles.pickerField, pressed && styles.pickerFieldPressed]}
+      style={({ pressed }) => [
+        styles.pickerField,
+        pressed && { backgroundColor: tint },
+      ]}
       onPress={onPress}
     >
-      <Ionicons name={icon} size={20} color={COLORS.primary} />
+      <Ionicons name={icon} size={20} color={primary} />
       <Text style={styles.pickerValue}>{value}</Text>
       <Ionicons name="calendar-outline" size={18} color={COLORS.textSecondary} />
     </Pressable>
@@ -344,9 +358,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  pickerFieldPressed: {
-    backgroundColor: COLORS.surface,
-  },
   pickerValue: {
     flex: 1,
     fontSize: 15,
@@ -359,7 +370,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   chip: {
-    backgroundColor: COLORS.surface,
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 7,
@@ -368,7 +378,6 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: 13,
     fontWeight: '600',
-    color: COLORS.primary,
   },
   hint: {
     fontSize: 12,
@@ -381,7 +390,6 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 14,
-    color: COLORS.primary,
     textAlign: 'center',
     marginTop: 12,
   },

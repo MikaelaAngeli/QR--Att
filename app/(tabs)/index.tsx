@@ -4,8 +4,11 @@ import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import AppButton from '@/components/AppButton';
 import Header from '@/components/Header';
 import { COLORS } from '@/constants/colors';
+import { useTheme } from '@/lib/theme';
 
 export default function Index() {
+  const { primary } = useTheme();
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
@@ -13,7 +16,7 @@ export default function Index() {
       </View>
 
       <View style={styles.bodyContainer}>
-        <Text style={styles.mainTitle}>School Event Attendance</Text>
+        <Text style={[styles.mainTitle, { color: primary }]}>School Event Attendance</Text>
         <Text style={styles.subtitle}>
           Scan QR Codes to record attendance during school activities.
         </Text>

@@ -36,7 +36,10 @@ type EventRow = {
 type AttendanceHistoryRow = {
   id: string;
   scanned_at: string;
-  events: { event_code: string; title: string }[] | null;
+  events:
+    | { event_code: string; title: string }
+    | { event_code: string; title: string }[]
+    | null;
 };
 
 export async function registerAttendance(
@@ -134,12 +137,16 @@ export async function getAttendanceHistory(
     return [];
   }
 
-  return (data as AttendanceHistoryRow[]).map((row) => ({
-    id: row.id,
-    eventId: row.events?.[0]?.event_code ?? '',
-    eventTitle: row.events?.[0]?.title ?? '',
-    scannedAt: row.scanned_at,
-  }));
+  return (data as AttendanceHistoryRow[]).map((row) => {
+    const event = Array.isArray(row.events) ? row.events[0] : row.events;
+
+    return {
+      id: row.id,
+      eventId: event?.event_code ?? '',
+      eventTitle: event?.title ?? '',
+      scannedAt: row.scanned_at,
+    };
+  });
 }
 
 export async function createEvent(event: Event): Promise<{ error: string | null }> {

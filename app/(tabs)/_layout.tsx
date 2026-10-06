@@ -5,9 +5,11 @@ import { useEffect, useState } from 'react';
 import { COLORS } from '@/constants/colors';
 import { useAuth } from '@/lib/auth';
 import { getProfile } from '@/lib/profiles';
+import { useTheme } from '@/lib/theme';
 
 export default function TabLayout() {
   const { user } = useAuth();
+  const { primary, tint } = useTheme();
   const [isTeacher, setIsTeacher] = useState(false);
 
   useEffect(() => {
@@ -37,10 +39,10 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: COLORS.primary,
+        tabBarActiveTintColor: primary,
         tabBarInactiveTintColor: COLORS.textSecondary,
         tabBarStyle: {
-          backgroundColor: COLORS.surface,
+          backgroundColor: tint,
           borderTopColor: COLORS.border,
           height: 65,
           paddingTop: 5,

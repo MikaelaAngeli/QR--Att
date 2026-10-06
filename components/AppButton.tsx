@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { COLORS } from '@/constants/colors';
+import { useTheme } from '@/lib/theme';
 
 type Props = {
   title: string;
@@ -18,18 +19,20 @@ export default function AppButton({
   onPress,
   disabled = false,
 }: Props) {
+  const { primary } = useTheme();
+
   if (theme === 'primary') {
     return (
       <View
         style={[
           styles.buttonOuter,
-          { borderWidth: 3, borderColor: COLORS.primary, borderRadius: 18 },
+          { borderWidth: 3, borderColor: primary, borderRadius: 18 },
         ]}
       >
         <Pressable
           style={[
             styles.buttonInner,
-            { backgroundColor: COLORS.primary, opacity: disabled ? 0.6 : 1 },
+            { backgroundColor: primary, opacity: disabled ? 0.6 : 1 },
           ]}
           onPress={disabled ? undefined : onPress}
           disabled={disabled}

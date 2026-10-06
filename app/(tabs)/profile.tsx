@@ -13,9 +13,11 @@ import AppButton from '@/components/AppButton';
 import { COLORS } from '@/constants/colors';
 import { useAuth, signOut } from '@/lib/auth';
 import { getProfile, updateProfile, type Profile } from '@/lib/profiles';
+import { THEME_COLORS, useTheme } from '@/lib/theme';
 
 export default function ProfileScreen() {
   const { user } = useAuth();
+  const { primary, tint, setPrimary } = useTheme();
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [draftName, setDraftName] = useState('');
@@ -65,6 +67,28 @@ export default function ProfileScreen() {
     setEditing(false);
   };
 
+  const handleSelectColor = async (color: string) => {
+    if (!user || saving || color === primary) return;
+
+    setSaving(true);
+    try {
+      const { error } = await updateProfile(user.id, { theme_color: color });
+      if (error) throw new Error(error);
+
+      setProfile((current) =>
+        current ? { ...current, theme_color: color } : current
+      );
+      setPrimary(color);
+    } catch (error) {
+      Alert.alert(
+        'Could not save color',
+        error instanceof Error ? error.message : 'Please try again.'
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSignOut = async () => {
     if (saving) return;
     setSaving(true);
@@ -95,10 +119,10 @@ export default function ProfileScreen() {
           <View
             style={[
               styles.roleBadge,
-              profile?.role === 'student' && styles.roleBadgeStudent,
+              { backgroundColor: tint },
             ]}
           >
-            <Text style={styles.roleBadgeText}>
+            <Text style={[styles.roleBadgeText, { color: primary }]}>
               {profile
                 ? profile.role === 'teacher'
                   ? 'Teacher'
@@ -118,7 +142,9 @@ export default function ProfileScreen() {
                 autoFocus
               />
               <Pressable onPress={handleSaveName} disabled={saving}>
-                <Text style={styles.actionText}>{saving ? 'Saving...' : 'Save'}</Text>
+                <Text style={[styles.actionText, { color: primary }]}>
+                  {saving ? 'Saving...' : 'Save'}
+                </Text>
               </Pressable>
             </View>
           ) : (
@@ -126,7 +152,7 @@ export default function ProfileScreen() {
               <Text style={styles.value}>
                 {profile?.full_name || 'Tap to add your name'}
               </Text>
-              <Text style={styles.editHint}>Edit</Text>
+              <Text style={[styles.editHint, { color: primary }]}>Edit</Text>
             </Pressable>
           )}
 
@@ -135,6 +161,40 @@ export default function ProfileScreen() {
 
           <Text style={styles.label}>User ID</Text>
           <Text style={styles.valueSmall}>{user.id}</Text>
+
+          <Text style={styles.label}>App Theme Color</Text>
+          <Text style={styles.colorHint}>Choose an accent color for the app.</Text>
+          <View style={styles.colorOptions}>
+            {THEME_COLORS.map((color) => {
+              const selected = color.primary === primary;
+              return (
+                <Pressable
+                  key={color.name}
+                  style={[
+                    styles.colorOption,
+                    selected && { borderColor: color.primary },
+                  ]}
+                  onPress={() => handleSelectColor(color.primary)}
+                  disabled={saving}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${color.name} theme color`}
+                  accessibilityState={{ selected, disabled: saving }}
+                >
+                  <View style={[styles.colorSwatch, { backgroundColor: color.primary }]}>
+                    {selected && <View style={styles.selectedMark} />}
+                  </View>
+                  <Text
+                    style={[
+                      styles.colorName,
+                      selected && { color: color.primary },
+                    ]}
+                  >
+                    {color.name}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
       ) : (
         <Text style={styles.subtitle}>No signed-in user.</Text>
@@ -182,11 +242,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     marginBottom: 8,
   },
-  roleBadgeStudent: {
-    backgroundColor: COLORS.surface,
-  },
   roleBadgeText: {
-    color: COLORS.primary,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -225,13 +281,45 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     color: COLORS.textPrimary,
   },
-  actionText: {
-    color: COLORS.primary,
-    fontWeight: '700',
-  },
+  actionText: { fontWeight: '700' },
   editHint: {
-    color: COLORS.primary,
     fontSize: 12,
     fontWeight: '600',
+  },
+  colorHint: {
+    color: COLORS.textSecondary,
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  colorOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  colorOption: {
+    width: 64,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderRadius: 10,
+    padding: 5,
+  },
+  colorSwatch: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectedMark: {
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: '#FFFFFF',
+  },
+  colorName: {
+    color: COLORS.textSecondary,
+    fontSize: 11,
+    marginTop: 3,
   },
 });

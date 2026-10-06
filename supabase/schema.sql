@@ -5,11 +5,15 @@ create table if not exists public.profiles (
   id         uuid primary key references auth.users (id) on delete cascade,
   email      text not null,
   full_name  text,
+  theme_color text,
   role       text not null default 'student'
              check (role in ('student', 'teacher')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.profiles
+  add column if not exists theme_color text;
 
 create table if not exists public.events (
   id          uuid primary key default gen_random_uuid(),
@@ -199,3 +203,5 @@ from auth.users u
 where u.id = p.id
   and u.raw_user_meta_data ->> 'role' in ('student', 'teacher')
   and p.role is distinct from u.raw_user_meta_data ->> 'role';
+
+notify pgrst, 'reload schema';
