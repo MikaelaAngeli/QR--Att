@@ -55,3 +55,30 @@ Scan QR code with Expo Go. Or press `W` for web.
 | QR won't scan | Phone + computer on same WiFi |
 | White screen | Wait 10s, or shake → Reload |
 | TypeScript errors | Run `npx tsc --noEmit` |
+
+---
+
+## AUTHENTICATION AND ADMINISTRATOR
+
+The app supports email/password registration, sign-in, sign-out, and persisted Supabase
+sessions. New public registrations are student accounts. Teachers and administrators
+must be assigned by an existing administrator or through the Supabase SQL editor.
+
+To configure the first administrator:
+
+1. Run `supabase/schema.sql` in the Supabase SQL editor.
+2. Register the account that should administer the app and confirm its email if required.
+3. Run this query in the Supabase SQL editor, replacing the email:
+
+   ```sql
+   update public.profiles
+   set role = 'admin', updated_at = now()
+   where email = 'admin@school.edu';
+   ```
+
+4. Sign out and sign in again, then open the Admin tab.
+
+Administrators can manage profile names and roles, create/edit/delete events, view
+attendance totals and recent records, and correct or remove attendance records.
+Database row-level security enforces administrator access; hiding the Admin tab is
+only a navigation convenience, not the authorization boundary.

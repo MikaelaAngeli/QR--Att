@@ -2,17 +2,17 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
-import { COLORS } from '@/constants/colors';
 import { useAuth } from '@/lib/auth';
 import { getTeacherEventAttendance, type TeacherEventAttendance } from '@/lib/attendance';
 import { getAttendanceHistory, type AttendanceRecord } from '@/lib/database';
-import { getProfile } from '@/lib/profiles';
-import { useTheme } from '@/lib/theme';
+import { getProfile, type Role } from '@/lib/profiles';
+import { useTheme, type AppColors } from '@/lib/theme';
 
 export default function HistoryScreen() {
   const { user } = useAuth();
-  const { primary, tint } = useTheme();
-  const [role, setRole] = useState<'student' | 'teacher'>('student');
+  const { primary, colors } = useTheme();
+  const styles = createStyles(colors, primary);
+  const [role, setRole] = useState<Role>('student');
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [teacherEvents, setTeacherEvents] = useState<TeacherEventAttendance[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,8 +33,11 @@ export default function HistoryScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <Text style={styles.eyebrow}>{role === 'teacher' ? 'TEACHER TOOLS' : 'YOUR ACTIVITY'}</Text>
         <Text style={styles.title}>{role === 'teacher' ? 'Event Attendance' : 'Attendance History'}</Text>
-        <Text style={styles.subtitle}>{role === 'teacher' ? 'All scans for your events' : 'Your verified scans'}</Text>
+        <Text style={styles.subtitle}>
+          {role === 'teacher' ? 'A record of scans for the events you created.' : 'A record of your verified event check-ins.'}
+        </Text>
       </View>
 
       {loading ? (
@@ -52,7 +55,9 @@ export default function HistoryScreen() {
               <View style={styles.card}>
                 <View style={styles.row}>
                   <Text style={styles.eventTitle}>{item.title}</Text>
-                  <View style={[styles.badge, { backgroundColor: tint }]}><Text style={[styles.badgeText, { color: primary }]}>{item.attendeeCount}</Text></View>
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{item.attendeeCount}</Text>
+                  </View>
                 </View>
                 <Text style={styles.eventMeta}>{item.eventCode}</Text>
                 <View style={styles.divider} />
@@ -97,34 +102,37 @@ export default function HistoryScreen() {
 function shortId(id: string) { return id ? `…${id.slice(-8)}` : 'unknown'; }
 function formatDate(iso: string) { return new Date(iso).toLocaleString(); }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background, paddingHorizontal: 20, paddingTop: 20 },
-  header: { marginBottom: 16 },
-  title: { fontSize: 24, fontWeight: '800', color: COLORS.textPrimary, letterSpacing: 0.1, marginBottom: 4 },
-  subtitle: { fontSize: 13, color: COLORS.textSecondary, lineHeight: 18 },
+function createStyles(colors: AppColors, primary: string) {
+ return StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background, paddingHorizontal: 24, paddingTop: 28 },
+  header: { marginBottom: 22 },
+  eyebrow: { fontSize: 10, color: colors.accent, letterSpacing: 1.4, fontWeight: '800', marginBottom: 8 },
+  title: { fontSize: 27, fontWeight: '700', color: colors.textPrimary, letterSpacing: -0.5, marginBottom: 6 },
+  subtitle: { fontSize: 13, color: colors.textSecondary, lineHeight: 19 },
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingBottom: 80 },
   emptyCard: {
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 12,
-    padding: 24,
+    backgroundColor: colors.card,
+    borderLeftColor: colors.accent,
+    borderLeftWidth: 3,
+    paddingHorizontal: 20,
+    paddingVertical: 22,
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 12,
   },
-  emptyText: { fontSize: 15, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 6 },
-  emptySub: { fontSize: 13, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 18 },
-  list: { paddingBottom: 32, paddingTop: 4 },
-  card: { backgroundColor: COLORS.card, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  eventTitle: { fontSize: 15, fontWeight: '700', color: COLORS.textPrimary, flex: 1, letterSpacing: -0.2, marginRight: 8 },
-  eventMeta: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2, flex: 1 },
-  time: { fontSize: 11, color: COLORS.textSecondary, marginTop: 6, fontWeight: '500' },
-  badge: { backgroundColor: COLORS.surface, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, minWidth: 28, alignItems: 'center' },
-  badgeText: { color: COLORS.primary, fontSize: 12, fontWeight: '800' },
-  check: { width: 26, height: 26, borderRadius: 13, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
+  emptyText: { fontSize: 15, fontWeight: '700', color: colors.textPrimary, marginBottom: 6 },
+  emptySub: { fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 18 },
+  list: { paddingBottom: 32, paddingTop: 0 },
+  card: { backgroundColor: colors.card, borderBottomColor: colors.border, borderBottomWidth: 1, paddingHorizontal: 16, paddingVertical: 17 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 },
+  eventTitle: { fontSize: 15, fontWeight: '700', color: colors.textPrimary, flex: 1, letterSpacing: -0.1, marginRight: 8 },
+  eventMeta: { fontSize: 12, color: colors.textSecondary, marginTop: 3, flex: 1, lineHeight: 17 },
+  time: { fontSize: 11, color: colors.textSecondary, marginTop: 6, fontWeight: '500' },
+  badge: { backgroundColor: colors.accentSurface, paddingHorizontal: 10, paddingVertical: 5, minWidth: 30, alignItems: 'center' },
+  badgeText: { color: colors.accent, fontSize: 12, fontWeight: '800' },
+  check: { width: 28, height: 28, borderRadius: 14, backgroundColor: primary, alignItems: 'center', justifyContent: 'center' },
   checkText: { color: '#FFFFFF', fontWeight: '800', fontSize: 14 },
-  divider: { height: 1, backgroundColor: COLORS.border, marginVertical: 10, opacity: 0.7 },
-  attendeeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: COLORS.textSecondary },
-});
+  divider: { height: 1, backgroundColor: colors.border, marginVertical: 11 },
+  attendeeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.tertiary },
+ });
+}

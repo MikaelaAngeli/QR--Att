@@ -2,19 +2,18 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
 import { useEffect, useState } from 'react';
 
-import { COLORS } from '@/constants/colors';
 import { useAuth } from '@/lib/auth';
-import { getProfile } from '@/lib/profiles';
+import { getProfile, type Role } from '@/lib/profiles';
 import { useTheme } from '@/lib/theme';
 
 export default function TabLayout() {
   const { user } = useAuth();
-  const { primary, tint } = useTheme();
-  const [isTeacher, setIsTeacher] = useState(false);
+  const { colors } = useTheme();
+  const [role, setRole] = useState<Role | null>(null);
 
   useEffect(() => {
     let active = true;
-    setIsTeacher(false);
+    setRole(null);
 
     if (!user) {
       return () => {
@@ -24,10 +23,10 @@ export default function TabLayout() {
 
     getProfile(user.id)
       .then((profile) => {
-        if (active) setIsTeacher(profile?.role === 'teacher');
+        if (active) setRole(profile?.role ?? null);
       })
       .catch(() => {
-        if (active) setIsTeacher(false);
+        if (active) setRole(null);
       });
 
     return () => {
@@ -39,15 +38,18 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: primary,
-        tabBarInactiveTintColor: COLORS.textSecondary,
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: tint,
-          borderTopColor: COLORS.border,
-          height: 65,
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+          height: 64,
           paddingTop: 5,
+          paddingBottom: 5,
         },
-        tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '600', marginTop: 1.5 },
+        tabBarItemStyle: { paddingVertical: 0 },
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tabs.Screen name="index" options={{ 
@@ -61,7 +63,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="teacher"
         options={{
-          href: isTeacher ? undefined : null,
+          href: role === 'teacher' ? undefined : null,
           title: 'Teacher',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
@@ -69,6 +71,16 @@ export default function TabLayout() {
               color={color}
               size={22}
             />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="admin"
+        options={{
+          href: role === 'admin' ? undefined : null,
+          title: 'Admin',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="shield-checkmark-outline" color={color} size={22} />
           ),
         }}
       />

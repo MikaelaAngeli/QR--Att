@@ -1,13 +1,13 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { COLORS } from '@/constants/colors';
 import { useTheme } from '@/lib/theme';
 
 type Props = { title: string };
 
 export default function Header({ title }: Props) {
-  const { primary, tint } = useTheme();
+  const { primary, tint, colors } = useTheme();
+  const styles = createStyles(colors);
 
   return (
     <View style={styles.container}>
@@ -19,7 +19,8 @@ export default function Header({ title }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ReturnType<typeof useTheme>['colors']) {
+ return StyleSheet.create({
   container: {
     alignItems: 'center',
     paddingVertical: 24,
@@ -28,7 +29,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -36,6 +37,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: COLORS.textPrimary,
+    color: colors.textPrimary,
   },
-});
+ });
+}

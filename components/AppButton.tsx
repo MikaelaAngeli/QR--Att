@@ -1,7 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { COLORS } from '@/constants/colors';
 import { useTheme } from '@/lib/theme';
 
 type Props = {
@@ -19,16 +18,12 @@ export default function AppButton({
   onPress,
   disabled = false,
 }: Props) {
-  const { primary } = useTheme();
+  const { primary, colors } = useTheme();
+  const styles = createStyles(colors);
 
   if (theme === 'primary') {
     return (
-      <View
-        style={[
-          styles.buttonOuter,
-          { borderWidth: 3, borderColor: primary, borderRadius: 18 },
-        ]}
-      >
+      <View style={styles.buttonOuter}>
         <Pressable
           style={[
             styles.buttonInner,
@@ -40,10 +35,10 @@ export default function AppButton({
           <Ionicons
             name={icon}
             size={22}
-            color={COLORS.textOnPrimary}
+            color={colors.textOnPrimary}
             style={styles.icon}
           />
-          <Text style={[styles.label, { color: COLORS.textOnPrimary }]}>
+          <Text style={[styles.label, { color: colors.textOnPrimary }]}>
             {title}
           </Text>
         </Pressable>
@@ -61,7 +56,7 @@ export default function AppButton({
         <Ionicons
           name={icon}
           size={22}
-          color={COLORS.textSecondary}
+          color={colors.textSecondary}
           style={styles.icon}
         />
         <Text style={styles.label}>{title}</Text>
@@ -70,25 +65,25 @@ export default function AppButton({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ReturnType<typeof useTheme>['colors']) {
+  return StyleSheet.create({
   buttonOuter: {
     width: '100%',
     marginBottom: 14,
+    borderRadius: 4,
   },
   buttonInner: {
-    borderRadius: 14,
-    paddingVertical: 16,
+    borderRadius: 4,
+    paddingVertical: 14,
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    backgroundColor: COLORS.card,
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   icon: { paddingRight: 10 },
-  label: { fontSize: 17, fontWeight: '600', color: COLORS.textPrimary },
-});
+  label: { fontSize: 17, fontWeight: '600', color: colors.textPrimary },
+  });
+}
